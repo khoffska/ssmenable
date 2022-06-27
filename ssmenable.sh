@@ -25,10 +25,9 @@ aws iam add-role-to-instance-profile --role-name SNSNotifications --instance-pro
 #maintenencewindowrole
 aws iam create-role --role-name MaintenanceWindowRole --assume-role-policy-document file://trust.json
 aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/service-role/AmazonSSMMaintenanceWindowRole --role-name MaintenanceWindowRole
-aws iam create-policy --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json --output text
 snsrole=$(aws iam list-roles --query 'Roles[?RoleName==`SNSNotifications`].Arn' --output text)
 sed -i "s@replaceme@$snsrole@g" IAMpassrolesns.json
-aws iam attach-role-policy --policy-arn "$snsrole" --role-name MaintenanceWindowRole
+aws iam put-role-policy --role-name MaintenanceWindowRole --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json
 
 
 
