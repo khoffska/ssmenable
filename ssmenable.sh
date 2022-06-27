@@ -28,7 +28,7 @@ aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/service-role/Ama
 cat IAMpassrolesns.json | sed 's/replaceme/SNSNotifications/g' | tee IAMpassrolesns.json
 aws iam create-policy --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json --output text
 snsrole=$(aws iam list-roles --query 'Roles[?RoleName==`SNSNotifications`].Arn' --output text)
-cat IAMpassrolesns.json | sed "s/replaceme/$snsrole/g" | tee IAMpassrolesns.json
+sed -i "s@replaceme@$snsrole@g" IAMpassrolesns.json
 aws iam attach-role-policy --policy-arn "$snsrole" --role-name MaintenanceWindowRole
 
 
@@ -41,10 +41,8 @@ touch file
 aws s3 cp file s3://patchinstaller123412345/prd/aza
 aws s3api put-bucket-lifecycle --bucket patchinstaller123412345 --lifecycle-configuration file://lifecycle.json
 
-aws iam get-role --role-name Cloudnexa-Env0
-snstopic=$(aws sns list-topics | grep PRD)
-rolearn=$(aws iam get-role --role-name Cloudnexa-Env0 | grep Arn)
-echo "ExternalID is $externalid"
+
+
 echo "Sns topic is $snstopic"
 echo "RoleARN is $rolearn "
 

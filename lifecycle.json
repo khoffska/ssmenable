@@ -1,0 +1,12 @@
+{
+  "Rules": [
+    {
+      "Expiration": {
+        "Days": 365
+      },
+      "ID": "Delete logs in one year",
+      "Prefix": "asdfasdfpatchinstaller/prd/aza",
+      "Status": "Enabled"
+    }
+  ]
+}
