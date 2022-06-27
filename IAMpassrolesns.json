@@ -5,7 +5,7 @@
             "Sid": "VisualEditor0",
             "Effect": "Allow",
             "Action": "iam:PassRole",
-            "Resource": "arn:aws:iam::088825575706:role/replaceme"
+            "Resource": "replaceme"
         }
     ]
 }
