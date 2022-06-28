@@ -1,7 +1,7 @@
 #!/bin/bash
-#companyname="testcompany"
-#basearn=$(aws sts get-caller-identity --query Arn | sed 's/[",]//g')
-#sed -i "s/externalid/$externalid/" trust.json
+
+read -p "Enter Company name:" companyname
+
 
 #createsnstopic
 aws sns create-topic --name  PRD-Instances
@@ -20,8 +20,6 @@ aws iam attach-role-policy --policy-arn "$publishrole" --role-name SNSNotificati
 aws iam create-instance-profile --instance-profile-name SNSNotificationsinstancerole
 aws iam add-role-to-instance-profile --role-name SNSNotifications --instance-profile-name SNSNotificationsinstancerole
 
-
-
 #maintenencewindowrole
 aws iam create-role --role-name MaintenanceWindowRole --assume-role-policy-document file://trust.json
 aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/service-role/AmazonSSMMaintenanceWindowRole --role-name MaintenanceWindowRole
@@ -29,21 +27,15 @@ snsrole=$(aws iam list-roles --query 'Roles[?RoleName==`SNSNotifications`].Arn' 
 sed -i "s@replaceme@$snsrole@g" IAMpassrolesns.json
 aws iam put-role-policy --role-name MaintenanceWindowRole --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json
 
-
-
-
-
 #creates3buckets companynameinstaller companynameinstaller/prd/aza 12 months companyname-12months
 aws s3 mb s3://patchinstaller123412345
 touch file
 aws s3 cp file s3://patchinstaller123412345/prd/aza
 aws s3api put-bucket-lifecycle --bucket patchinstaller123412345 --lifecycle-configuration file://lifecycle.json
 
+maintrole=$(aws iam list-roles --query 'Roles[?RoleName==`MaintenanceWindowRole`].Arn' --output text)
 
 
-echo "Sns topic is $snstopic"
-echo "RoleARN is $rolearn "
-
-
-#RENOVA-MaintenanceWindowRole - AmazonSSMMaintenanceWindowRole - RENOVA-IAMPassRoleSNS (InlinePolicy)
-#RENOVASNSNotifications - RENOVA-SNSPublishPermissions
+echo "IAM service role is $maintrole"
+echo "Bucket name is patchinstaller123412345"
+echo "IAM role for SNS is $snsrole"

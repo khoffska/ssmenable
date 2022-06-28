@@ -4,7 +4,7 @@
       "Expiration": {
         "Days": 365
       },
-      "ID": "Delete logs in one year",
+      "ID": "cnpatchinstaller-12months",
       "Prefix": "asdfasdfpatchinstaller/prd/aza",
       "Status": "Enabled"
     }
