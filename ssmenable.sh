@@ -1,7 +1,7 @@
 #!/bin/bash
 
 read -p "Enter Company name:" companyname
-
+s3bucket=$(echo $companyname"\-\patchinstaller")
 
 #createsnstopic
 aws sns create-topic --name  PRD-Instances
