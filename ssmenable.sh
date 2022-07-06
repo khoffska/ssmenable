@@ -1,7 +1,11 @@
 #!/bin/bash
 
 read -p "Enter Company name:" companyname
-s3bucket=$(echo $companyname"\-\patchinstaller")
+s3bucket=$(echo $companyname"-patchinstaller")
+snsnamePRD=$(echo $companyname"-PRD-Instances")
+snsnameDEV=$(echo $companyname"-DEV-Instances")
+servicename=$(echo $companyname"-MaintenanceWindowRole")
+
 
 #createsnstopic
 aws sns create-topic --name  PRD-Instances
@@ -13,7 +17,7 @@ aws sns subscribe --topic-arn "$snstopic" --protocol email --notification-endpoi
 
 
 #SNSNotificationsrole
-aws iam create-policy --policy-name SNSPublishPermissions --policy-document file://snspublish.json
+aws iam create-policy --policy-name $companyname"-SNSPublishPermissions" --policy-document file://snspublish.json
 aws iam create-role --role-name SNSNotifications --assume-role-policy-document file://trust.json
 publishrole=$(aws iam list-policies --query 'Policies[?PolicyName==`SNSPublishPermissions`].Arn' --output text)
 aws iam attach-role-policy --policy-arn "$publishrole" --role-name SNSNotifications
@@ -28,14 +32,14 @@ sed -i "s@replaceme@$snsrole@g" IAMpassrolesns.json
 aws iam put-role-policy --role-name MaintenanceWindowRole --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json
 
 #creates3buckets companynameinstaller companynameinstaller/prd/aza 12 months companyname-12months
-aws s3 mb s3://patchinstaller123412345
+aws s3 mb s3://${s3bucket}
 touch file
-aws s3 cp file s3://patchinstaller123412345/prd/aza
-aws s3api put-bucket-lifecycle --bucket patchinstaller123412345 --lifecycle-configuration file://lifecycle.json
+aws s3 cp file s3://${s3bucket}/prd/aza
+aws s3api put-bucket-lifecycle --bucket ${s3bucket} --lifecycle-configuration file://lifecycle.json
 
 maintrole=$(aws iam list-roles --query 'Roles[?RoleName==`MaintenanceWindowRole`].Arn' --output text)
 
 
 echo "IAM service role is $maintrole"
-echo "Bucket name is patchinstaller123412345"
+echo "Bucket name is $s3bucket"
 echo "IAM role for SNS is $snsrole"
