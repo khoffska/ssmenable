@@ -3,8 +3,11 @@
 read -p "Enter Company name:" companyname
 s3bucket=$(echo $companyname"-patchinstaller")
 snsnamePRD=$(echo $companyname"-PRD-Instances")
-snsnameDEV=$(echo $companyname"-DEV-Instances")
-servicename=$(echo $companyname"-MaintenanceWindowRole")
+snsnameDEV=$(echo $companyname"-PRD-Instances")
+maintrole=$(echo $companyname"-MaintenanceRole")
+snspubrole=$(echo $companyname"-SNSPublishPermissions")
+snsnotrole=$(echo $companyname"-SNSNotifications")
+snsinstancerole=$(echo $companyname"-SNSNotificationsinstancerole")
 
 
 #createsnstopic
@@ -17,19 +20,19 @@ aws sns subscribe --topic-arn "$snstopic" --protocol email --notification-endpoi
 
 
 #SNSNotificationsrole
-aws iam create-policy --policy-name $companyname"-SNSPublishPermissions" --policy-document file://snspublish.json
-aws iam create-role --role-name SNSNotifications --assume-role-policy-document file://trust.json
+aws iam create-policy --policy-name $snspubrole --policy-document file://snspublish.json
+aws iam create-role --role-name $snsnotrole --assume-role-policy-document file://trust.json
 publishrole=$(aws iam list-policies --query 'Policies[?PolicyName==`SNSPublishPermissions`].Arn' --output text)
-aws iam attach-role-policy --policy-arn "$publishrole" --role-name SNSNotifications
-aws iam create-instance-profile --instance-profile-name SNSNotificationsinstancerole
-aws iam add-role-to-instance-profile --role-name SNSNotifications --instance-profile-name SNSNotificationsinstancerole
+aws iam attach-role-policy --policy-arn "$publishrole" --role-name $snsnotrole
+aws iam create-instance-profile --instance-profile-name $snsinstancerole
+aws iam add-role-to-instance-profile --role-name $snsnotrole --instance-profile-name $snsinstancerole
 
 #maintenencewindowrole
-aws iam create-role --role-name MaintenanceWindowRole --assume-role-policy-document file://trust.json
-aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/service-role/AmazonSSMMaintenanceWindowRole --role-name MaintenanceWindowRole
+aws iam create-role --role-name $maintrole --assume-role-policy-document file://trust.json
+aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/service-role/AmazonSSMMaintenanceWindowRole --role-name $maintrole
 snsrole=$(aws iam list-roles --query 'Roles[?RoleName==`SNSNotifications`].Arn' --output text)
 sed -i "s@replaceme@$snsrole@g" IAMpassrolesns.json
-aws iam put-role-policy --role-name MaintenanceWindowRole --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json
+aws iam put-role-policy --role-name $maintrole --policy-name IAMpassrolesns --policy-document file://IAMpassrolesns.json
 
 #creates3buckets companynameinstaller companynameinstaller/prd/aza 12 months companyname-12months
 aws s3 mb s3://${s3bucket}
